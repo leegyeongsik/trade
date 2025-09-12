@@ -1,4 +1,4 @@
-package edu.cnu.swacademy.security.auth.entity;
+package edu.cnu.swacademy.security.auth.domain;
 
 import edu.cnu.swacademy.security.user.entity.User;
 import jakarta.persistence.*;

@@ -1,6 +1,7 @@
 package edu.cnu.swacademy.security.common;
 
-import edu.cnu.swacademy.security.auth.entity.Authentication;
+import edu.cnu.swacademy.security.auth.domain.Authentication;
+import edu.cnu.swacademy.security.cashwallet.domain.CashWallet;
 import edu.cnu.swacademy.security.user.entity.User;
 import org.springframework.stereotype.Component;
 
@@ -34,5 +35,26 @@ public class Validate {
         if(b){
             throw new SecurityException(ErrorCode.EMAIL_ALREADY_EXISTS);
         }
+    }
+
+    public CashWallet isCashWallet(Optional<CashWallet>OptionalCashWallet) throws SecurityException {
+        CashWallet cashWallet=OptionalCashWallet.orElseThrow(() ->
+                new SecurityException(ErrorCode.CASH_WALLET_NOT_FOUND));
+        isBlock(cashWallet.isBlocked());
+        return cashWallet;
+    }
+
+    public void check(long currentPossibleWithdrawal, int amount) throws SecurityException {
+        if(amount<currentPossibleWithdrawal){
+            throw new SecurityException(ErrorCode.INSUFFICIENT_BALANCE);
+        }
+    }
+    public void isBlock(boolean blocked) throws SecurityException {
+        if(blocked){
+            throw  new SecurityException(ErrorCode.CASH_WALLET_ALREADY_BLOCKED);
+        }
+    }
+    public void unBlock() throws SecurityException {
+        throw new SecurityException(ErrorCode.CASH_WALLET_ALREADY_UNBLOCKED);
     }
 }

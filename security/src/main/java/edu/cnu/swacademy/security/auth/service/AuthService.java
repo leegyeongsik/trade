@@ -3,7 +3,7 @@ package edu.cnu.swacademy.security.auth.service;
 import edu.cnu.swacademy.security.auth.dto.LoginRequest;
 import edu.cnu.swacademy.security.auth.dto.LoginResponse;
 import edu.cnu.swacademy.security.auth.dto.TokenReissueRequest;
-import edu.cnu.swacademy.security.auth.entity.Authentication;
+import edu.cnu.swacademy.security.auth.domain.Authentication;
 import edu.cnu.swacademy.security.auth.repository.AuthenticationRepository;
 import edu.cnu.swacademy.security.common.*;
 import edu.cnu.swacademy.security.common.SecurityException;
