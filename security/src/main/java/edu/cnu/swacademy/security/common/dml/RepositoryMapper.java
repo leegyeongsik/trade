@@ -3,8 +3,8 @@ package edu.cnu.swacademy.security.common.dml;
 import edu.cnu.swacademy.security.cashwallet.domain.CashWalletHistory;
 import edu.cnu.swacademy.security.cashwallet.repository.CashWalletHistoryRepository;
 import edu.cnu.swacademy.security.common.BaseEntity;
-import edu.cnu.swacademy.security.stock.domain.StockWalletHistory;
-import edu.cnu.swacademy.security.stock.repository.StockWalletHistoryRepository;
+import edu.cnu.swacademy.security.stockwallet.domain.StockWalletHistory;
+import edu.cnu.swacademy.security.stockwallet.repository.StockWalletHistoryRepository;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Component;
 

@@ -2,12 +2,11 @@ package edu.cnu.swacademy.security.common;
 
 import edu.cnu.swacademy.security.auth.domain.Authentication;
 import edu.cnu.swacademy.security.cashwallet.domain.CashWallet;
-import edu.cnu.swacademy.security.stock.domain.StockWallet;
+import edu.cnu.swacademy.security.stockwallet.domain.StockWallet;
 import edu.cnu.swacademy.security.user.entity.User;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Optional;
 
 @Component
