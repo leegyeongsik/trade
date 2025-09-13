@@ -50,6 +50,8 @@ public class CashWalletServiceImpl implements CashWalletService{
     public void depositWallet(int userId, int amount) throws SecurityException {
         User user = validate.isUser(userRepository.findById(userId));
         CashWallet cashWallet =validate.isCashWallet(cashWalletRepository.findByUserId(user.getId()));
+        validate.isBlock(cashWallet.isBlocked(),true);
+
         cashWallet.deposit(amount);
         cashWalletRepository.save(cashWallet);
         Worker worker = new Worker(new SaveWorker(context.getBean(RepositoryMapper.class))
@@ -61,6 +63,8 @@ public class CashWalletServiceImpl implements CashWalletService{
     public void withdrawalWallet(int userId, int amount) throws SecurityException {
         User user = validate.isUser(userRepository.findById(userId));
         CashWallet cashWallet =validate.isCashWallet(cashWalletRepository.findByUserId(user.getId()));
+        validate.isBlock(cashWallet.isBlocked(),true);
+
         validate.checkWithdrawal(cashWallet.getReserve()-cashWallet.getDeposit(),amount);
         cashWallet.withdrawal(amount);
         cashWalletRepository.save(cashWallet);
@@ -73,22 +77,24 @@ public class CashWalletServiceImpl implements CashWalletService{
     public BalanceResponse balance(int userId) throws SecurityException {
         User user = validate.isUser(userRepository.findById(userId));
         CashWallet cashWallet =validate.isCashWallet(cashWalletRepository.findByUserId(user.getId()));
+        validate.isBlock(cashWallet.isBlocked(),true);
+
         return new BalanceResponse(cashWallet.getId(), (int) cashWallet.getReserve(), (int) cashWallet.getDeposit(), (int) (cashWallet.getReserve()-cashWallet.getDeposit()));
     }
 
     @Override
-    public void cashWalletBlock(int userId) throws SecurityException {
-        CashWallet cashWallet =validate.isCashWallet(cashWalletRepository.findByUserId(userId));
+    public void cashWalletBlock(int cashWalletId) throws SecurityException {
+        CashWallet cashWallet =validate.isCashWallet(cashWalletRepository.findById(cashWalletId));
+        validate.isBlock(cashWallet.isBlocked(),true);
 
         cashWallet.blocked();
         cashWalletRepository.save(cashWallet);
     }
 
     @Override
-    public void cashWalletUnBlock(int userId) throws SecurityException {
-        CashWallet cashWallet =validate.isCashWallet(cashWalletRepository.findByUserId(userId));
-        validate.unBlock();
-
+    public void cashWalletUnBlock(int cashWalletId) throws SecurityException {
+        CashWallet cashWallet =validate.isCashWallet(cashWalletRepository.findById(cashWalletId));
+        validate.unBlock(cashWallet.isBlocked(),true);
         cashWallet.blocked();
         cashWalletRepository.save(cashWallet);
     }
