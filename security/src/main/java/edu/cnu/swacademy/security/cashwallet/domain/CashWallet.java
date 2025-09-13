@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
 @SQLRestriction("deleted_at IS NULL")
 @SQLDelete(sql = "UPDATE cash_wallet SET deleted_at = CURRENT_TIMESTAMP WHERE id = ?")
 @NoArgsConstructor(access = lombok.AccessLevel.PROTECTED)
-@Table(name = "cashwallet")
+@Table(name = "cash_wallet")
 @Entity
 
 public class CashWallet extends BaseEntity {

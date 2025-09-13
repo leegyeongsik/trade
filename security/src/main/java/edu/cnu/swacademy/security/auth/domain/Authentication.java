@@ -39,8 +39,9 @@ public class Authentication {
         this.expiredAt = expiredAt;
     }
 
-    public void updateRefreshToken(String refreshToken, LocalDateTime expiredAt) {
+    public Authentication updateRefreshToken(String refreshToken, LocalDateTime expiredAt) {
         this.refreshToken = refreshToken;
         this.expiredAt = expiredAt;
+        return this;
     }
 }

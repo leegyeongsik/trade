@@ -23,32 +23,35 @@ public class CashWalletController {
         cashWalletService.createCashWallet(userId);
     }
     @PostMapping("/deposit")
-    public void depositWallet(HttpServletRequest request , @Valid DepositAndWithdrawalRequest depositAndWithdrawalRequest) throws Exception {
+    public void depositWallet(HttpServletRequest request , @Valid @RequestBody DepositAndWithdrawalRequest depositAndWithdrawalRequest) throws Exception {
         int userId = (int) request.getAttribute("user_id");
         cashWalletService.depositWallet(userId, depositAndWithdrawalRequest.getAmount());
     }
     @PostMapping("/withdrawal")
-    public void withdrawalWallet(HttpServletRequest request , @Valid DepositAndWithdrawalRequest depositAndWithdrawalRequest) throws SecurityException {
+    public void withdrawalWallet(HttpServletRequest request , @Valid @RequestBody    DepositAndWithdrawalRequest depositAndWithdrawalRequest) throws Exception {
         int userId = (int) request.getAttribute("user_id");
         cashWalletService.withdrawalWallet(userId,depositAndWithdrawalRequest.getAmount());
     }
-    @GetMapping("/cash-wallet/balance")
+    @GetMapping("/balance")
     public BalanceResponse balance(HttpServletRequest request) throws SecurityException {
         int userId = (int) request.getAttribute("user_id");
         return cashWalletService.balance(userId);
     }
-    @GetMapping("/cash-wallet/histories")
-    public CashWalletHistoriesResponse cashWalletHistories(HttpServletRequest request){
+    @GetMapping("/histories")
+    public CashWalletHistoriesResponse cashWalletHistories(HttpServletRequest request,
+                                                           @RequestParam(defaultValue = "0") int page,
+                                                           @RequestParam(defaultValue = "20")int size,
+                                                           @RequestParam(defaultValue = "desc")String sort) throws Exception {
         int userId = (int) request.getAttribute("user_id");
-        return null;
+        return cashWalletService.cashWalletHistories(userId,page,size,sort);
     }
 
     @PostMapping("/cash-wallet/{userId}/block")
-    public void cashWalletBlock( @PathVariable int userId) throws SecurityException {
+    public void cashWalletBlock( @PathVariable int userId) throws Exception {
         cashWalletService.cashWalletBlock(userId);
     }
     @PostMapping("/cash-wallet/{userId}/unblock")
-    public void cashWalletUnBlock( @PathVariable int userId) throws SecurityException {
+    public void cashWalletUnBlock( @PathVariable int userId) throws Exception {
         cashWalletService.cashWalletUnBlock(userId);
     }
 

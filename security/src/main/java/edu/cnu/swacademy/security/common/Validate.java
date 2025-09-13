@@ -6,6 +6,7 @@ import edu.cnu.swacademy.security.user.entity.User;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 @Component
@@ -20,7 +21,7 @@ public class Validate {
         return user.orElseThrow(() ->
                   new SecurityException(ErrorCode.USER_NOT_FOUND));
     }
-    public Authentication isAuthentication(Optional<Authentication> authentication) throws SecurityException {
+    public Authentication isRefreshTokenAuthentication(Optional<Authentication> authentication) throws SecurityException {
         return authentication.orElseThrow(() ->
                 new SecurityException(ErrorCode.REFRESH_TOKEN_NOT_FOUND));
 
@@ -44,8 +45,8 @@ public class Validate {
         return cashWallet;
     }
 
-    public void check(long currentPossibleWithdrawal, int amount) throws SecurityException {
-        if(amount<currentPossibleWithdrawal){
+    public void checkWithdrawal(long currentPossibleWithdrawal, int amount) throws SecurityException {
+        if(amount>currentPossibleWithdrawal){
             throw new SecurityException(ErrorCode.INSUFFICIENT_BALANCE);
         }
     }
@@ -56,5 +57,9 @@ public class Validate {
     }
     public void unBlock() throws SecurityException {
         throw new SecurityException(ErrorCode.CASH_WALLET_ALREADY_UNBLOCKED);
+    }
+
+    public Authentication checkAuthentication(Optional<Authentication> authentication ) {
+        return authentication.get();
     }
 }

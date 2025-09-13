@@ -1,6 +1,7 @@
 package edu.cnu.swacademy.security.cashwallet.service;
 
 import edu.cnu.swacademy.security.cashwallet.dto.BalanceResponse;
+import edu.cnu.swacademy.security.cashwallet.dto.CashWalletHistoriesResponse;
 import edu.cnu.swacademy.security.common.SecurityException;
 
 public interface CashWalletService {
@@ -15,4 +16,6 @@ public interface CashWalletService {
     void cashWalletBlock(int userId) throws SecurityException;
 
     void cashWalletUnBlock(int userId) throws SecurityException;
+
+    CashWalletHistoriesResponse cashWalletHistories(int userId, int page, int size, String sort) throws SecurityException;
 }

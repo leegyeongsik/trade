@@ -1,30 +1,45 @@
 package edu.cnu.swacademy.security.cashwallet.service;
 
 import edu.cnu.swacademy.security.cashwallet.domain.CashWallet;
+import edu.cnu.swacademy.security.cashwallet.domain.CashWalletHistory;
 import edu.cnu.swacademy.security.cashwallet.dto.BalanceResponse;
+import edu.cnu.swacademy.security.cashwallet.dto.CashWalletHistoriesResponse;
+import edu.cnu.swacademy.security.cashwallet.dto.CashWalletHistoryResponse;
+import edu.cnu.swacademy.security.cashwallet.repository.CashWalletHistoryRepository;
 import edu.cnu.swacademy.security.cashwallet.repository.CashWalletRepository;
+import edu.cnu.swacademy.security.common.BaseEntity;
 import edu.cnu.swacademy.security.common.SecurityException;
 import edu.cnu.swacademy.security.common.Validate;
+import edu.cnu.swacademy.security.common.dml.RepositoryMapper;
+import edu.cnu.swacademy.security.common.dml.SaveWorker;
+import edu.cnu.swacademy.security.common.dml.Worker;
 import edu.cnu.swacademy.security.user.entity.User;
 import edu.cnu.swacademy.security.user.repository.UserRepository;
 import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationContext;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 @Service
+@RequiredArgsConstructor
 public class CashWalletServiceImpl implements CashWalletService{
     private final CashWalletRepository cashWalletRepository;
+    private final CashWalletHistoryRepository cashWalletHistoryRepository;
     private final UserRepository userRepository;
     private final Validate validate;
-    public CashWalletServiceImpl(CashWalletRepository cashWalletRepository, UserRepository userRepository, Validate validate) {
-        this.cashWalletRepository = cashWalletRepository;
-        this.userRepository = userRepository;
-        this.validate = validate;
-    }
+    private final ApplicationContext context;
+
 
     @Override
-    public void createCashWallet(int userId) throws SecurityException {
+    public void createCashWallet(int userId) throws SecurityException { // 저장할때
         User user = validate.isUser(userRepository.findById(userId));
         String walletNumber =  transWallet();
         CashWallet cashWallet = new CashWallet(user,walletNumber);
@@ -37,15 +52,21 @@ public class CashWalletServiceImpl implements CashWalletService{
         CashWallet cashWallet =validate.isCashWallet(cashWalletRepository.findByUserId(user.getId()));
         cashWallet.deposit(amount);
         cashWalletRepository.save(cashWallet);
+        Worker worker = new Worker(new SaveWorker(context.getBean(RepositoryMapper.class))
+                ,new BaseEntity[]{new CashWalletHistory("입금",amount,"거래사유",cashWallet.getReserve(),cashWallet)});
+        worker.execute();
     }
     @Transactional
     @Override
     public void withdrawalWallet(int userId, int amount) throws SecurityException {
         User user = validate.isUser(userRepository.findById(userId));
         CashWallet cashWallet =validate.isCashWallet(cashWalletRepository.findByUserId(user.getId()));
-        validate.check(cashWallet.getReserve()-cashWallet.getDeposit(),amount);
+        validate.checkWithdrawal(cashWallet.getReserve()-cashWallet.getDeposit(),amount);
         cashWallet.withdrawal(amount);
         cashWalletRepository.save(cashWallet);
+        Worker worker = new Worker(new SaveWorker(context.getBean(RepositoryMapper.class))
+                ,new BaseEntity[]{new CashWalletHistory("출금",amount,"거래사유",cashWallet.getReserve(),cashWallet)});
+        worker.execute();
     }
 
     @Override
@@ -70,6 +91,20 @@ public class CashWalletServiceImpl implements CashWalletService{
 
         cashWallet.blocked();
         cashWalletRepository.save(cashWallet);
+    }
+
+    @Override
+    public CashWalletHistoriesResponse cashWalletHistories(int userId, int page, int size, String sort) throws SecurityException {
+        User user = validate.isUser(userRepository.findById(userId));
+        CashWallet cashWallet =validate.isCashWallet(cashWalletRepository.findByUserId(user.getId()));
+        Pageable pageable = sort.equals("desc") ? PageRequest.of(page, size, Sort.by("createdAt").descending()) :
+                PageRequest.of(page, size, Sort.by("createdAt").ascending());
+        Page<CashWalletHistory> histories = cashWalletHistoryRepository.findByCashWallet(pageable,cashWallet);
+        List<CashWalletHistoryResponse> historyResponses = new ArrayList<>();
+        for (CashWalletHistory cashWalletHistory: histories.getContent()) {
+            historyResponses.add(new CashWalletHistoryResponse(cashWalletHistory));
+        }
+        return new CashWalletHistoriesResponse((int) histories.getTotalElements(),historyResponses);
     }
 
     private String transWallet() {

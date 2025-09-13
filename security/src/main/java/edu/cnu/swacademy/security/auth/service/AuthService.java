@@ -27,13 +27,15 @@ public class AuthService {
     }
     @Transactional(rollbackFor = Exception.class)
     public LoginResponse login(LoginRequest request) throws SecurityException {
-        User user = validate.isUser(userRepository.findByEmail(request.userEmail()));
-        String encodingPassword =  HashUtil.sha512(user.getPassword());
+        User user = validate.isUser(userRepository.findByEmail(request.getUserEmail()));
+        String encodingPassword =  HashUtil.sha512(request.getUserPassword());
         validate.passwordValidation(encodingPassword,user.getPassword());
 
         TokenInfo tokenInfo= jwtUtil.generateAccessAndRefreshToken(user.getId());
-        Authentication authentication = new Authentication(user,tokenInfo.refreshToken(),tokenInfo.refreshTokenExpiredAt());
-
+        Authentication authentication=validate.checkAuthentication(authenticationRepository.findByUser_Id(user.getId())); // 있으면 그거 그냥 가져와서 업데이트만 쳐
+        authentication =  authentication == null
+                ? new Authentication(user,tokenInfo.refreshToken(),tokenInfo.refreshTokenExpiredAt()) :
+                authentication.updateRefreshToken(tokenInfo.refreshToken(),tokenInfo.refreshTokenExpiredAt());
         authenticationRepository.save(authentication);
 
         return new LoginResponse(tokenInfo);
@@ -41,8 +43,8 @@ public class AuthService {
 
     @Transactional(rollbackFor = Exception.class)
     public LoginResponse reissue(TokenReissueRequest request) throws SecurityException {
-        Authentication authentication =  validate.isAuthentication(authenticationRepository.findByRefreshToken(request.refreshToken()));
-        User user = validate.isUser(userRepository.findById(authentication.getId()));
+        Authentication authentication =  validate.isRefreshTokenAuthentication(authenticationRepository.findByRefreshToken(request.refreshToken()));
+        User user = validate.isUser(userRepository.findById(authentication.getUser().getId()));
         validate.authenticationValidation(authentication);
 
         TokenInfo tokenInfo= jwtUtil.generateAccessAndRefreshToken(user.getId());

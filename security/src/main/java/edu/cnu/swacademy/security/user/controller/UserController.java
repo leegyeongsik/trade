@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.Map;
+
 @RequestMapping("/api/v1/user")
 @RestController
 public class UserController {
@@ -24,9 +26,9 @@ public class UserController {
     this.userService = userService;
   }
 
-  @PostMapping()
+  @PostMapping("")
   public UserSignupResponse signUp(@Valid @RequestBody UserSignupRequest userSignupRequest) throws Exception {
-      int userId = userService.signUp(userSignupRequest);
-      return new UserSignupResponse(userId);
+          int userId = userService.signUp(userSignupRequest);
+          return new UserSignupResponse(userId);
   }
 }
