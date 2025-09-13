@@ -1,10 +1,12 @@
 package edu.cnu.swacademy.security.common;
 
-import edu.cnu.swacademy.security.auth.entity.Authentication;
+import edu.cnu.swacademy.security.auth.domain.Authentication;
+import edu.cnu.swacademy.security.cashwallet.domain.CashWallet;
 import edu.cnu.swacademy.security.user.entity.User;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 @Component
@@ -19,7 +21,7 @@ public class Validate {
         return user.orElseThrow(() ->
                   new SecurityException(ErrorCode.USER_NOT_FOUND));
     }
-    public Authentication isAuthentication(Optional<Authentication> authentication) throws SecurityException {
+    public Authentication isRefreshTokenAuthentication(Optional<Authentication> authentication) throws SecurityException {
         return authentication.orElseThrow(() ->
                 new SecurityException(ErrorCode.REFRESH_TOKEN_NOT_FOUND));
 
@@ -34,5 +36,30 @@ public class Validate {
         if(b){
             throw new SecurityException(ErrorCode.EMAIL_ALREADY_EXISTS);
         }
+    }
+
+    public CashWallet isCashWallet(Optional<CashWallet>OptionalCashWallet) throws SecurityException {
+        CashWallet cashWallet=OptionalCashWallet.orElseThrow(() ->
+                new SecurityException(ErrorCode.CASH_WALLET_NOT_FOUND));
+        isBlock(cashWallet.isBlocked());
+        return cashWallet;
+    }
+
+    public void checkWithdrawal(long currentPossibleWithdrawal, int amount) throws SecurityException {
+        if(amount>currentPossibleWithdrawal){
+            throw new SecurityException(ErrorCode.INSUFFICIENT_BALANCE);
+        }
+    }
+    public void isBlock(boolean blocked) throws SecurityException {
+        if(blocked){
+            throw  new SecurityException(ErrorCode.CASH_WALLET_ALREADY_BLOCKED);
+        }
+    }
+    public void unBlock() throws SecurityException {
+        throw new SecurityException(ErrorCode.CASH_WALLET_ALREADY_UNBLOCKED);
+    }
+
+    public Authentication checkAuthentication(Optional<Authentication> authentication ) {
+        return authentication.get();
     }
 }

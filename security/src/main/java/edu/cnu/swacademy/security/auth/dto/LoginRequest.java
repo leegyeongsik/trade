@@ -3,14 +3,20 @@ package edu.cnu.swacademy.security.auth.dto;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 
-public record LoginRequest(
+@Setter
+@Getter
+@RequiredArgsConstructor
+public class LoginRequest{
         @NotBlank
         @Email
         @Size(min = 10, max = 100)
-        String userEmail,
+        String userEmail;
 
         @NotBlank
         @Size(min = 8, max = 32)
-        String userPassword
-) {}
+        String userPassword;
+}

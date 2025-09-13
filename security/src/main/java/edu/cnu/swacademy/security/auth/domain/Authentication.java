@@ -1,4 +1,4 @@
-package edu.cnu.swacademy.security.auth.entity;
+package edu.cnu.swacademy.security.auth.domain;
 
 import edu.cnu.swacademy.security.user.entity.User;
 import jakarta.persistence.*;
@@ -39,8 +39,9 @@ public class Authentication {
         this.expiredAt = expiredAt;
     }
 
-    public void updateRefreshToken(String refreshToken, LocalDateTime expiredAt) {
+    public Authentication updateRefreshToken(String refreshToken, LocalDateTime expiredAt) {
         this.refreshToken = refreshToken;
         this.expiredAt = expiredAt;
+        return this;
     }
 }
