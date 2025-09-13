@@ -13,9 +13,9 @@ public interface CashWalletService {
 
     BalanceResponse balance(int userId) throws SecurityException;
 
-    void cashWalletBlock(int userId) throws SecurityException;
+    void cashWalletBlock(int cashWalletId) throws SecurityException;
 
-    void cashWalletUnBlock(int userId) throws SecurityException;
+    void cashWalletUnBlock(int cashWalletId) throws SecurityException;
 
     CashWalletHistoriesResponse cashWalletHistories(int userId, int page, int size, String sort) throws SecurityException;
 }

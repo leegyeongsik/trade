@@ -46,13 +46,13 @@ public class CashWalletController {
         return cashWalletService.cashWalletHistories(userId,page,size,sort);
     }
 
-    @PostMapping("/cash-wallet/{userId}/block")
-    public void cashWalletBlock( @PathVariable int userId) throws Exception {
-        cashWalletService.cashWalletBlock(userId);
+    @PostMapping("/{cash_wallet_id}/block")
+    public void cashWalletBlock( @PathVariable int cash_wallet_id) throws Exception {
+        cashWalletService.cashWalletBlock(cash_wallet_id);
     }
-    @PostMapping("/cash-wallet/{userId}/unblock")
-    public void cashWalletUnBlock( @PathVariable int userId) throws Exception {
-        cashWalletService.cashWalletUnBlock(userId);
+    @PostMapping("/{cash_wallet_id}/unblock")
+    public void cashWalletUnBlock( @PathVariable int cash_wallet_id) throws Exception {
+        cashWalletService.cashWalletUnBlock(cash_wallet_id);
     }
 
 }
