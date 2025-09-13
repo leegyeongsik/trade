@@ -1,4 +1,4 @@
-package edu.cnu.swacademy.security.stock.domain;
+package edu.cnu.swacademy.security.stockwallet.domain;
 
 import edu.cnu.swacademy.security.common.BaseEntity;
 import edu.cnu.swacademy.security.user.entity.User;
@@ -8,8 +8,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.SQLRestriction;
-
-import java.time.LocalDateTime;
 
 @Getter
 @AllArgsConstructor

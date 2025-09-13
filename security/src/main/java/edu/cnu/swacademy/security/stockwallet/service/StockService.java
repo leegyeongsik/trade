@@ -1,7 +1,7 @@
-package edu.cnu.swacademy.security.stock.service;
+package edu.cnu.swacademy.security.stockwallet.service;
 
 import edu.cnu.swacademy.security.common.SecurityException;
-import edu.cnu.swacademy.security.stock.dto.BalanceResponse;
+import edu.cnu.swacademy.security.stockwallet.dto.BalanceResponse;
 
 public interface StockService {
     void createStockWallet(int userId, int stockId) throws SecurityException;

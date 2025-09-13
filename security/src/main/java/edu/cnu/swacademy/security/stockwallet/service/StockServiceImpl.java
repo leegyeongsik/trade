@@ -1,16 +1,14 @@
-package edu.cnu.swacademy.security.stock.service;
+package edu.cnu.swacademy.security.stockwallet.service;
 
 import edu.cnu.swacademy.security.common.SecurityException;
 import edu.cnu.swacademy.security.common.Validate;
-import edu.cnu.swacademy.security.stock.domain.StockWallet;
-import edu.cnu.swacademy.security.stock.dto.BalanceResponse;
-import edu.cnu.swacademy.security.stock.repository.StockWalletHistoryRepository;
-import edu.cnu.swacademy.security.stock.repository.StockWalletRepository;
+import edu.cnu.swacademy.security.stockwallet.domain.StockWallet;
+import edu.cnu.swacademy.security.stockwallet.dto.BalanceResponse;
+import edu.cnu.swacademy.security.stockwallet.repository.StockWalletRepository;
 import edu.cnu.swacademy.security.user.entity.User;
 import edu.cnu.swacademy.security.user.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 @Service

@@ -1,4 +1,4 @@
-package edu.cnu.swacademy.security.stock.dto;
+package edu.cnu.swacademy.security.stockwallet.dto;
 
 import jakarta.validation.constraints.Min;
 import lombok.Getter;

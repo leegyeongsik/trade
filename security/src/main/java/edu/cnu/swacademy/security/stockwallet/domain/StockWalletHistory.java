@@ -1,7 +1,6 @@
-package edu.cnu.swacademy.security.stock.domain;
+package edu.cnu.swacademy.security.stockwallet.domain;
 
 import edu.cnu.swacademy.security.common.BaseEntity;
-import edu.cnu.swacademy.security.stock.domain.StockWallet;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

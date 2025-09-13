@@ -1,11 +1,10 @@
-package edu.cnu.swacademy.security.stock.controller;
+package edu.cnu.swacademy.security.stockwallet.controller;
 
-import edu.cnu.swacademy.security.cashwallet.dto.DepositAndWithdrawalRequest;
 import edu.cnu.swacademy.security.common.SecurityException;
-import edu.cnu.swacademy.security.stock.dto.BalanceResponse;
-import edu.cnu.swacademy.security.stock.dto.StockCreateRequest;
-import edu.cnu.swacademy.security.stock.dto.StockReserveRequest;
-import edu.cnu.swacademy.security.stock.service.StockService;
+import edu.cnu.swacademy.security.stockwallet.dto.BalanceResponse;
+import edu.cnu.swacademy.security.stockwallet.dto.StockCreateRequest;
+import edu.cnu.swacademy.security.stockwallet.dto.StockReserveRequest;
+import edu.cnu.swacademy.security.stockwallet.service.StockService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
