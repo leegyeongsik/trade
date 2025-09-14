@@ -1,8 +1,10 @@
 package edu.cnu.swacademy.security.market.service;
 
+import edu.cnu.swacademy.security.common.ErrorCode;
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-
+import edu.cnu.swacademy.security.common.SecurityException;
 /**
  * 틱 사이즈 계산 유틸리티
  * 가격 구간에 따른 호가 단위를 계산하고 적용합니다.
@@ -104,5 +106,17 @@ public class TickSizeUtil {
 
         return price.divide(tickSize, 0, RoundingMode.HALF_UP)
                 .multiply(tickSize);
+    }
+    public static void valid(BigDecimal orderPrice , BigDecimal todayPrice) throws SecurityException {
+        if (!TickSizeUtil.isValidTickSize(orderPrice)) {
+            throw new SecurityException(ErrorCode.INVALID_TICK_SIZE);
+        }
+
+        BigDecimal upperLimit = todayPrice.multiply(new BigDecimal("1.3")).setScale(0, RoundingMode.HALF_UP);
+        BigDecimal lowerLimit = todayPrice.multiply(new BigDecimal("0.7")).setScale(0, RoundingMode.HALF_UP);
+
+        if (orderPrice.compareTo(upperLimit) > 0 || orderPrice.compareTo(lowerLimit) < 0) {
+            throw new SecurityException(ErrorCode.INVALID_TICK_SIZE);
+        }
     }
 }

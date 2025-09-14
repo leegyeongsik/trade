@@ -8,14 +8,14 @@ spring:
     database-platform: org.hibernate.dialect.MySQLDialect
   jackson:
     property-naming-strategy: SNAKE_CASE
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
 
 server:
   port: 8080
 
-data:
-  redis:
-    host: ${REDIS_HOST:localhost}
-    port: ${REDIS_PORT:6379}
 
 exchange:
   server:

@@ -9,6 +9,7 @@ import edu.cnu.swacademy.security.user.entity.User;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 @Component
@@ -105,9 +106,15 @@ public class Validate {
         }
     }
 
-    public MarketStatus isMarketStatus(Optional<MarketStatus> optionalMarketStatus) throws SecurityException {
-        return optionalMarketStatus.orElseThrow(() ->
-                new SecurityException(ErrorCode.INTERNAL_SERVER_ERROR));
+    public void isMarketStatus(List<MarketStatus> latestMarketStatus) throws SecurityException {
+        if(latestMarketStatus.isEmpty()){
+            throw new SecurityException(ErrorCode.INTERNAL_SERVER_ERROR);
+        }
+    }
 
+    public void possibleOrder(long reserve, int price) throws SecurityException {
+        if(reserve<price){
+            throw new SecurityException(ErrorCode.INSUFFICIENT_BALANCE);
+        }
     }
 }

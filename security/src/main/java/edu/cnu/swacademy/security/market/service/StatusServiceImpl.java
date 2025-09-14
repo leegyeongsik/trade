@@ -27,16 +27,15 @@ public class StatusServiceImpl implements StatusService{
 
     @Transactional(rollbackFor = Exception.class)
     public void createMarketStatus() throws SecurityException {
-        MarketStatus  latestmarketStatus = validate.isMarketStatus(marketStatusRepository.findFirstByOrderByCreatedAtDesc());
-        List<MarketStatus> todayStatuses = marketStatusRepository.findAllByCreatedAt(latestmarketStatus.getCreatedAt());
+        List<MarketStatus> latestMarketStatus = marketStatusRepository.findLatestMarketStatusPerStock();
+        validate.isMarketStatus(latestMarketStatus);
 
         List<MarketStatus> nextStatuses = new ArrayList<>();
-        for (MarketStatus todayStatus : todayStatuses) {
+        for (MarketStatus todayStatus : latestMarketStatus) {
             LocalDateTime nextStartOfDay = LocalDate.now().plusDays(1).atStartOfDay();
             nextStatuses.add(createStatus(todayStatus.getStock(), todayStatus,nextStartOfDay));
         }
         marketStatusRepository.saveAll(nextStatuses);
-
     }
     public MarketStatus createStatus(Stock stock,MarketStatus todayStatus, LocalDateTime nextStartOfDay) {
         BigDecimal referencePrice = todayStatus.getTradingVolume() != 0
