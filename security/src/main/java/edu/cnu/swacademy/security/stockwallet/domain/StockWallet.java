@@ -1,6 +1,7 @@
 package edu.cnu.swacademy.security.stockwallet.domain;
 
 import edu.cnu.swacademy.security.common.BaseEntity;
+import edu.cnu.swacademy.security.stock.domain.Stock;
 import edu.cnu.swacademy.security.user.entity.User;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -22,12 +23,12 @@ public class StockWallet extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(columnDefinition = "INT UNSIGNED")
     private int id;
-    @OneToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(nullable = false)
     private User user;
-
-    @Column(columnDefinition = "INT UNSIGNED",unique = true,nullable = false)
-    private int stockId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(nullable = false)
+    private Stock stock;
 
     @Column(nullable = false, columnDefinition  = "INT UNSIGNED" )
     private int reserve;
@@ -36,19 +37,15 @@ public class StockWallet extends BaseEntity {
     @Column(nullable = false)
     private boolean isBlocked;
 
-    public StockWallet(User user, int stockId){
+    public StockWallet(User user,Stock stock){
         this.user = user;
-        this.stockId = stockId;
+        this.stock = stock;
         this.deposit = 0;
         this.reserve= 0;
     }
     public void deposit(int amount){
         this.reserve+=amount;
     }
-    public void withdrawal(int amount) {
-        this.reserve-=amount;
-    }
-
     public void blocked(){
         this.isBlocked = !this.isBlocked;
     }
