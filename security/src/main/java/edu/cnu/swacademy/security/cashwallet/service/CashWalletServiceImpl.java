@@ -11,8 +11,9 @@ import edu.cnu.swacademy.security.common.BaseEntity;
 import edu.cnu.swacademy.security.common.SecurityException;
 import edu.cnu.swacademy.security.common.Validate;
 import edu.cnu.swacademy.security.common.dml.RepositoryMapper;
-import edu.cnu.swacademy.security.common.dml.SaveWorker;
-import edu.cnu.swacademy.security.common.dml.Worker;
+import edu.cnu.swacademy.security.common.dml.SaveCommitter;
+import edu.cnu.swacademy.security.common.worker.CommitWorker;
+import edu.cnu.swacademy.security.common.worker.Worker;
 import edu.cnu.swacademy.security.user.entity.User;
 import edu.cnu.swacademy.security.user.repository.UserRepository;
 import jakarta.transaction.Transactional;
@@ -39,7 +40,7 @@ public class CashWalletServiceImpl implements CashWalletService{
 
 
     @Override
-    public void createCashWallet(int userId) throws SecurityException { // 저장할때
+    public void createCashWallet(int userId) throws SecurityException {
         User user = validate.isUser(userRepository.findById(userId));
         String walletNumber =  transWallet();
         CashWallet cashWallet = new CashWallet(user,walletNumber);
@@ -54,7 +55,7 @@ public class CashWalletServiceImpl implements CashWalletService{
 
         cashWallet.deposit(amount);
         cashWalletRepository.save(cashWallet);
-        Worker worker = new Worker(new SaveWorker(context.getBean(RepositoryMapper.class))
+        Worker worker = new CommitWorker(new SaveCommitter(context.getBean(RepositoryMapper.class))
                 ,new BaseEntity[]{new CashWalletHistory("입금",amount,"거래사유",cashWallet.getReserve(),cashWallet)});
         worker.execute();
     }
@@ -68,7 +69,7 @@ public class CashWalletServiceImpl implements CashWalletService{
         validate.checkWithdrawal(cashWallet.getReserve()-cashWallet.getDeposit(),amount);
         cashWallet.withdrawal(amount);
         cashWalletRepository.save(cashWallet);
-        Worker worker = new Worker(new SaveWorker(context.getBean(RepositoryMapper.class))
+        Worker worker = new CommitWorker(new SaveCommitter(context.getBean(RepositoryMapper.class))
                 ,new BaseEntity[]{new CashWalletHistory("출금",amount,"거래사유",cashWallet.getReserve(),cashWallet)});
         worker.execute();
     }

@@ -5,9 +5,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Component;
 
 @Component
-public class SaveWorker implements DmlWorker{
+public class SaveCommitter implements DmlCommitter {
     private final RepositoryMapper repositoryMapper;
-    public SaveWorker(RepositoryMapper repositoryMapper) {
+    public SaveCommitter(RepositoryMapper repositoryMapper) {
         this.repositoryMapper = repositoryMapper;
     }
 
