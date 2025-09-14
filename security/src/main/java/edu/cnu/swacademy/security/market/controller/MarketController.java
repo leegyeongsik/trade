@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.io.IOException;
 
 @RequiredArgsConstructor
-@RestController("/api/v1/market/")
+@RestController("/api/v1/market")
 
 public class MarketController {
     private final MarketService marketService;
