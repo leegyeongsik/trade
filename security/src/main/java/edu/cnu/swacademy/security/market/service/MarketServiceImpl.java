@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
-public class MarketServiceImpl implements MarketService{
+public class MarketServiceImpl implements MarketService {
     @Value("${exchange.server.jar-path}")
     private String exchangeServerJarPath;
     private Process exchangeServerProcess;
@@ -31,9 +31,26 @@ public class MarketServiceImpl implements MarketService{
     private int redisPort;
     private final Validate validate;
     private final StatusService statusService;
+
     @Override
     public MarketResponse openMarket() throws SecurityException, IOException {
         validate.exchangeServerNotExistCheck(exchangeServerProcess != null && exchangeServerProcess.isAlive());
+
+        startExchangeServer();
+        return new MarketResponse(EngineStatus.RUNNING, LocalDateTime.now());
+    }
+
+    @Override
+    public MarketResponse closeMarket() throws SecurityException {
+        validate.exchangeServerExistCheck(exchangeServerProcess != null && exchangeServerProcess.isAlive());
+
+        shutdownExchangeServer();
+
+        statusService.createMarketStatus();
+        return new MarketResponse(EngineStatus.STOPPED, LocalDateTime.now());
+    }
+
+    private void startExchangeServer() throws IOException {
         ProcessBuilder pb = new ProcessBuilder(
                 "java",
                 "-jar",
@@ -41,16 +58,15 @@ public class MarketServiceImpl implements MarketService{
                 "--server.port=" + exchangeServerPort,
                 "--server.address=" + exchangeServerHost
         );
+        pb.environment().put("REDIS_HOST", redisHost);
+        pb.environment().put("REDIS_PORT", String.valueOf(redisPort));
         pb.inheritIO();
-        this.exchangeServerProcess =  pb.start();
-        return new MarketResponse(EngineStatus.RUNNING, LocalDateTime.now());
+        this.exchangeServerProcess = pb.start();
     }
 
-    @Override
-    public MarketResponse closeMarket() throws SecurityException {
-        validate.exchangeServerExistCheck(exchangeServerProcess != null && exchangeServerProcess.isAlive());
+    private void shutdownExchangeServer() {
         exchangeServerProcess.destroy();
-        while (exchangeServerProcess.isAlive()){
+        while (exchangeServerProcess.isAlive()) {
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
@@ -58,8 +74,6 @@ public class MarketServiceImpl implements MarketService{
             }
         }
         exchangeServerProcess = null;
-        statusService.createStatus();
-        return new MarketResponse(EngineStatus.STOPPED, LocalDateTime.now());
     }
 
 }

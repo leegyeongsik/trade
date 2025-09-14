@@ -1,14 +1,18 @@
 package edu.cnu.swacademy.security.market.service;
 
+import edu.cnu.swacademy.security.common.SecurityException;
+import edu.cnu.swacademy.security.common.Validate;
 import edu.cnu.swacademy.security.market.domain.MarketStatus;
 import edu.cnu.swacademy.security.market.repository.MarketStatusRepository;
 import edu.cnu.swacademy.security.stock.domain.Stock;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,37 +20,41 @@ import java.util.List;
 @RequiredArgsConstructor
 public class StatusServiceImpl implements StatusService{
     private final MarketStatusRepository marketStatusRepository;
+    private static final int TEMPORARY_PREVIOUS_CLOSE_PRICE = 30000;
+    private static final BigDecimal UPPER = new BigDecimal("1.05");
+    private static final BigDecimal LOWER = new BigDecimal("0.95");
+    private final Validate validate;
 
-    @Override
-    public void createStatus() {
-        LocalDate today = LocalDate.now();
-        LocalDateTime startOfDay = today.atStartOfDay();
-        LocalDateTime endOfDay = today.atTime(LocalTime.MAX);
-        LocalDateTime nextStartOfDay = startOfDay.plusDays(1);
-        List<MarketStatus> todayStatuses = marketStatusRepository.findAllByCreatedAtBetween(startOfDay, endOfDay); // 이거 스레드로 뺄수있으면 빼자 만들고 save에 넣으면 되니까
-        List<MarketStatus> nextStatuses = new ArrayList<>();                                                       // 그럼 만드는 부분을 스레드가 만들면 되지
-        for (MarketStatus todayStatus : todayStatuses) {                                                            // 그러면 saveall도 하나 추가
-            nextStatuses.add(checkVolume(todayStatus.getStock(), todayStatus,nextStartOfDay));
+    @Transactional(rollbackFor = Exception.class)
+    public void createMarketStatus() throws SecurityException {
+        MarketStatus  latestmarketStatus = validate.isMarketStatus(marketStatusRepository.findFirstByOrderByCreatedAtDesc());
+        List<MarketStatus> todayStatuses = marketStatusRepository.findAllByCreatedAt(latestmarketStatus.getCreatedAt());
+
+        List<MarketStatus> nextStatuses = new ArrayList<>();
+        for (MarketStatus todayStatus : todayStatuses) {
+            LocalDateTime nextStartOfDay = LocalDate.now().plusDays(1).atStartOfDay();
+            nextStatuses.add(createStatus(todayStatus.getStock(), todayStatus,nextStartOfDay));
         }
         marketStatusRepository.saveAll(nextStatuses);
+
+    }
+    public MarketStatus createStatus(Stock stock,MarketStatus todayStatus, LocalDateTime nextStartOfDay) {
+        BigDecimal referencePrice = todayStatus.getTradingVolume() != 0
+                ? BigDecimal.valueOf(todayStatus.getTradingAmount())
+                .divide(BigDecimal.valueOf(todayStatus.getTradingVolume()), 0, RoundingMode.HALF_UP)
+                : BigDecimal.valueOf(TEMPORARY_PREVIOUS_CLOSE_PRICE);
+
+        int upperLimitPrice = calculateUpperLimitPrice(referencePrice).intValue();
+        int lowerLimitPrice = calculateLowerLimitPrice(referencePrice).intValue();
+
+        return new MarketStatus(stock,nextStartOfDay, referencePrice.intValue(),upperLimitPrice,lowerLimitPrice);
     }
 
-    private MarketStatus checkVolume(Stock stock,MarketStatus todayStatus, LocalDateTime nextStartOfDay) {
-        if(todayStatus.getTradingAmount() == 0){
-            return zero(stock,todayStatus,nextStartOfDay);
-        }else {
-            return notZero(stock,todayStatus,nextStartOfDay);
-        }
+    private BigDecimal calculateUpperLimitPrice(BigDecimal referencePrice) {
+        return TickSizeUtil.validateAndAdjustTickSize(referencePrice.multiply(UPPER));
     }
 
-    private MarketStatus notZero(Stock stock, MarketStatus todayStatus, LocalDateTime nextStartOfDay) {
-        int referencePrice = (int) (todayStatus.getTradingAmount() / todayStatus.getTradingVolume());
-        int upperLimitPrice = (int) Math.round(referencePrice * 1.3);
-        int lowerLimitPrice = (int) Math.round(referencePrice * 0.7);
-        return new MarketStatus(stock,nextStartOfDay, referencePrice,upperLimitPrice,lowerLimitPrice);
-    }
-
-    private MarketStatus zero(Stock stock, MarketStatus todayStatus, LocalDateTime nextStartOfDay) {
-        return new MarketStatus(stock,nextStartOfDay, todayStatus.getReferencePrice(),todayStatus.getUpperLimitPrice(),todayStatus.getLowerLimitPrice());
+    private BigDecimal calculateLowerLimitPrice(BigDecimal referencePrice) {
+        return TickSizeUtil.validateAndAdjustTickSize(referencePrice.multiply(LOWER));
     }
 }

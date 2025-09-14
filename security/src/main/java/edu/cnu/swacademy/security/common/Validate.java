@@ -2,6 +2,7 @@ package edu.cnu.swacademy.security.common;
 
 import edu.cnu.swacademy.security.auth.domain.Authentication;
 import edu.cnu.swacademy.security.cashwallet.domain.CashWallet;
+import edu.cnu.swacademy.security.market.domain.MarketStatus;
 import edu.cnu.swacademy.security.stock.domain.Stock;
 import edu.cnu.swacademy.security.stockwallet.domain.StockWallet;
 import edu.cnu.swacademy.security.user.entity.User;
@@ -102,5 +103,11 @@ public class Validate {
         if(!alive){
             throw new SecurityException(ErrorCode.MARKET_ALREADY_CLOSED);
         }
+    }
+
+    public MarketStatus isMarketStatus(Optional<MarketStatus> optionalMarketStatus) throws SecurityException {
+        return optionalMarketStatus.orElseThrow(() ->
+                new SecurityException(ErrorCode.INTERNAL_SERVER_ERROR));
+
     }
 }
