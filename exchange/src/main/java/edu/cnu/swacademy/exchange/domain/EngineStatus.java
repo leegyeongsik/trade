@@ -1,4 +1,4 @@
-package edu.cnu.swacademy.security.market.domain;
+package edu.cnu.swacademy.exchange.domain;
 
 public enum EngineStatus {
     RUNNING,
