@@ -1,49 +1,24 @@
 package edu.cnu.swacademy.exchange.domain;
 
-import edu.cnu.swacademy.exchange.common.BaseEntity;
-import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
-import org.hibernate.annotations.SQLDelete;
-import org.hibernate.annotations.SQLRestriction;
+import lombok.Setter;
 
 @Getter
-@AllArgsConstructor
-@SQLRestriction("deleted_at IS NULL")
-@SQLDelete(sql = "UPDATE order SET deleted_at = CURRENT_TIMESTAMP WHERE id = ?")
-@NoArgsConstructor(access = lombok.AccessLevel.PROTECTED)
-@Table(name = "order")
-@Entity
-public class Order extends BaseEntity {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(columnDefinition = "INT UNSIGNED")
-    private int id;
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(nullable = false)
-    private User user;
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(nullable = false)
-    private Stock stock;
-
-    @Column(nullable = false)
-    private SideStatus side;
-    @Column(nullable = false, columnDefinition  = "INT UNSIGNED")
+@Setter
+public class Order  {
+    private int order_id;
+    private int product_id;
     private int price;
-    @Column(nullable = false , columnDefinition  = "INT UNSIGNED")
     private int amount;
-    @Column(nullable = false , columnDefinition  = "INT UNSIGNED")
-    private int unfilledAmount;
-    @Column(nullable = false , columnDefinition  = "INT UNSIGNED")
-    private int canceledAmount;
-    public Order(User user,Stock stock,SideStatus side,  int price, int amount , int unfilledAmount ){
-        this.user = user;
-        this.stock = stock;
-        this.side = side;
+    private String side;
+    private String created_at;
+
+    public Order(int order_id , int product_id , int price,int amount , String side , String created_at){
+        this.order_id = order_id;
+        this.product_id = product_id;
         this.price = price;
         this.amount = amount;
-        this.unfilledAmount = unfilledAmount;
-        this.canceledAmount =0;
+        this.side = side;
+        this.created_at = created_at;
     }
 }

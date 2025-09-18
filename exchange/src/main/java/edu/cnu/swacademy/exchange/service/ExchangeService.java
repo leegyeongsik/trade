@@ -10,4 +10,6 @@ public interface ExchangeService {
     ExchangeResponse orderProcess(OrderRequest orderRequest);
 
     ExchangeResponse orderDeleteProcess(OrderDeleteRequest orderDeleteRequest);
+
+    void orderComplete(ExchangeResponse exchangeResponse);
 }

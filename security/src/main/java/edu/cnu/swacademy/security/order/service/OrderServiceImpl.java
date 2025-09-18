@@ -9,6 +9,8 @@ import edu.cnu.swacademy.security.market.repository.MarketStatusRepository;
 import edu.cnu.swacademy.security.market.service.TickSizeUtil;
 import edu.cnu.swacademy.security.order.domain.Order;
 import edu.cnu.swacademy.security.order.domain.SideStatus;
+import edu.cnu.swacademy.security.order.dto.ExchangeRequest;
+import edu.cnu.swacademy.security.order.dto.ExchangeResponse;
 import edu.cnu.swacademy.security.order.dto.OrderRequest;
 import edu.cnu.swacademy.security.order.repository.OrderRepository;
 import edu.cnu.swacademy.security.stock.domain.Stock;
@@ -19,13 +21,16 @@ import edu.cnu.swacademy.security.user.entity.User;
 import edu.cnu.swacademy.security.user.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import java.math.BigDecimal;
 
 @Service
 @RequiredArgsConstructor
-public class OrderServiceImpl implements OrderService{
+public class OrderServiceImpl implements OrderService {
     private final OrderRepository orderRepository;
     private final Validate validate;
     private final UserRepository userRepository;
@@ -33,41 +38,67 @@ public class OrderServiceImpl implements OrderService{
     private final StockWalletRepository stockWalletRepository;
     private final StockRepository stockRepository;
     private final MarketStatusRepository marketStatusRepository;
+    private final RestTemplate restTemplate = new RestTemplate();
+
+    @Value("${exchange.server.port}")
+    private int exchangeServerPort;
+
+    @Value("${exchange.server.host}")
+    private String exchangeServerHost;
+
     @Override
     @Transactional
-    public void order(int userId, OrderRequest orderRequest) throws SecurityException {
+    public ExchangeResponse order(int userId, OrderRequest orderRequest) throws SecurityException {
         Stock stock = validate.isStock(stockRepository.findById(orderRequest.getStockId()));
-        MarketStatus stockStatus =   marketStatusRepository.findTopByStockIdOrderByCreatedAtDesc(stock.getId());
-        TickSizeUtil.valid(new BigDecimal(orderRequest.getPrice()),new BigDecimal(stockStatus.getReferencePrice()));
+        MarketStatus stockStatus = marketStatusRepository.findTopByStockIdOrderByCreatedAtDesc(stock.getId());
+        TickSizeUtil.valid(new BigDecimal(orderRequest.getPrice()), new BigDecimal(stockStatus.getReferencePrice()));
         User user = validate.isUser(userRepository.findById(userId));
 
-        switch (SideStatus.valueOf(orderRequest.getSide()) ) {
-            case BUY -> buyOrder(user, stock, orderRequest);
-            case SELL -> sellOrder(user, stock, orderRequest);
+        switch (SideStatus.valueOf(orderRequest.getSide())) {
+            case BUY -> {
+                return buyOrder(user, stock, orderRequest);
+            }
+            case SELL -> {
+                return sellOrder(user, stock, orderRequest);
+            }
+            default -> throw new IllegalAccessError();
         }
     }
-    private void sellOrder(User user, Stock stock, OrderRequest orderRequest) throws SecurityException {
-        StockWallet stockWallet = validate.isStockWallet(stockWalletRepository.findByUserAndStock(user,stock));
-        validate.isBlock(stockWallet.isBlocked(),false);
-        validate.possibleOrder(stockWallet.getReserve() , orderRequest.getQuantity());
+
+    private ExchangeResponse sellOrder(User user, Stock stock, OrderRequest orderRequest) throws SecurityException {
+        StockWallet stockWallet = validate.isStockWallet(stockWalletRepository.findByUserAndStock(user, stock));
+        validate.isBlock(stockWallet.isBlocked(), false);
+        validate.possibleOrder(stockWallet.getReserve(), orderRequest.getQuantity());
 
         stockWallet.order(orderRequest.getQuantity());
 
         stockWalletRepository.save(stockWallet);
-        Order order = new Order(user,stock, SideStatus.SELL,orderRequest.getPrice(),orderRequest.getQuantity(),orderRequest.getQuantity());
+        Order order = new Order(user, stock, SideStatus.SELL, orderRequest.getPrice(), orderRequest.getQuantity(), orderRequest.getQuantity());
         orderRepository.save(order);
 
-    }
-    private void buyOrder(User user, Stock stock, OrderRequest orderRequest) throws SecurityException {
-        CashWallet cashWallet =validate.isCashWallet(cashWalletRepository.findByUserId(user.getId()));
-        validate.isBlock(cashWallet.isBlocked(),true);
-        validate.possibleOrder(cashWallet.getReserve() , orderRequest.getPrice()*orderRequest.getQuantity());
+        return exchange(new ExchangeRequest(order.getId(), order.getStock().getId(), order.getPrice(), order.getAmount(), "SELL", order.getCreatedAt()));
 
-        cashWallet.order(orderRequest.getPrice()*orderRequest.getQuantity());
+    }
+
+    private ExchangeResponse buyOrder(User user, Stock stock, OrderRequest orderRequest) throws SecurityException {
+        CashWallet cashWallet = validate.isCashWallet(cashWalletRepository.findByUserId(user.getId()));
+        validate.isBlock(cashWallet.isBlocked(), true);
+        validate.possibleOrder(cashWallet.getReserve(), orderRequest.getPrice() * orderRequest.getQuantity());
+
+        cashWallet.order(orderRequest.getPrice() * orderRequest.getQuantity());
 
         cashWalletRepository.save(cashWallet);
 
-        Order order = new Order(user,stock, SideStatus.BUY,orderRequest.getPrice(),orderRequest.getQuantity(),orderRequest.getQuantity());
+        Order order = new Order(user, stock, SideStatus.BUY, orderRequest.getPrice(), orderRequest.getQuantity(), orderRequest.getQuantity());
         orderRepository.save(order);
+
+        return exchange(new ExchangeRequest(order.getId(), order.getStock().getId(), order.getPrice(), order.getAmount(), "BUY", order.getCreatedAt()));
+    }
+
+    private ExchangeResponse exchange(ExchangeRequest exchangeRequest) {
+        String url = String.format("http://%s:%s/api/v1/market/order", exchangeServerHost, exchangeServerPort);
+        ResponseEntity<ExchangeResponse> response =
+                restTemplate.postForEntity(url, exchangeRequest, ExchangeResponse.class);
+        return response.getBody();
     }
 }
