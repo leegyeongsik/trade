@@ -56,7 +56,7 @@ public class ExchangeServiceImpl implements ExchangeService {
     }
 
     public void orderComplete(ExchangeResponse exchangeResponse) {
-        String url = String.format("http://%s:%s/api/v1/result", securityServerHost, securityServerPort);
+        String url = String.format("http://%s:%s/api/v1/order/result", securityServerHost, securityServerPort);
         restTemplate.postForEntity(url, exchangeResponse, ExchangeResponse.class);
     }
 
