@@ -29,7 +29,7 @@ public class ExchangeServiceImpl implements ExchangeService {
         this.redisTemplate = redisTemplate;
         this.objectMapper = objectMapper;
     }
-    @Value("${security.server.host}")
+    @Value("${security.server.port}")
     private int securityServerPort;
 
     @Value("${security.server.host}")

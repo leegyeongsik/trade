@@ -11,9 +11,6 @@ public class RequestWorkerThreadPool {
     private final Thread[] workerThreads;
 
     public RequestWorkerThreadPool(RequestWorkerThreadSetting setting, WorkerQueue workerQueue) {
-        if (setting.getTotalThread() < 1) {
-            throw new IllegalArgumentException("poolSize: > 0");
-        }
         if (Objects.isNull(workerQueue)) {
             throw new IllegalArgumentException("workerQueue is null");
         }

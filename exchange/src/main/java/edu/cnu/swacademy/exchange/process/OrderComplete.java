@@ -11,7 +11,7 @@ public class OrderComplete {
     BlockingQueue<ExchangeResponse> completeQueue = new LinkedBlockingQueue<>();
 
     void offer(ExchangeResponse exchangeResponse){
-        completeQueue.offer(exchangeResponse)
+        completeQueue.offer(exchangeResponse);
     }
     public ExchangeResponse poll(){
         try {
