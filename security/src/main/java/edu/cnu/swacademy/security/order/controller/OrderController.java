@@ -22,7 +22,7 @@ public class OrderController {
     }
 
     @PostMapping("/result")
-    void result(@RequestBody ExchangeDto exchangeDto){
+    void result(@RequestBody ExchangeDto exchangeDto) throws SecurityException {
         orderService.orderResult(exchangeDto);
     }
 
