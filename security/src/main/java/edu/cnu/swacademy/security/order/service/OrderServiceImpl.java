@@ -10,7 +10,7 @@ import edu.cnu.swacademy.security.market.service.TickSizeUtil;
 import edu.cnu.swacademy.security.order.domain.Order;
 import edu.cnu.swacademy.security.order.domain.SideStatus;
 import edu.cnu.swacademy.security.order.dto.ExchangeRequest;
-import edu.cnu.swacademy.security.order.dto.ExchangeResponse;
+import edu.cnu.swacademy.security.order.dto.ExchangeDto;
 import edu.cnu.swacademy.security.order.dto.OrderRequest;
 import edu.cnu.swacademy.security.order.repository.OrderRepository;
 import edu.cnu.swacademy.security.stock.domain.Stock;
@@ -39,7 +39,6 @@ public class OrderServiceImpl implements OrderService {
     private final StockRepository stockRepository;
     private final MarketStatusRepository marketStatusRepository;
     private final RestTemplate restTemplate = new RestTemplate();
-
     @Value("${exchange.server.port}")
     private int exchangeServerPort;
 
@@ -48,7 +47,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional
-    public ExchangeResponse order(int userId, OrderRequest orderRequest) throws SecurityException {
+    public ExchangeDto order(int userId, OrderRequest orderRequest) throws SecurityException {
         Stock stock = validate.isStock(stockRepository.findById(orderRequest.getStockId()));
         MarketStatus stockStatus = marketStatusRepository.findTopByStockIdOrderByCreatedAtDesc(stock.getId());
         TickSizeUtil.valid(new BigDecimal(orderRequest.getPrice()), new BigDecimal(stockStatus.getReferencePrice()));
@@ -65,7 +64,31 @@ public class OrderServiceImpl implements OrderService {
         }
     }
 
-    private ExchangeResponse sellOrder(User user, Stock stock, OrderRequest orderRequest) throws SecurityException {
+    @Override
+    public void orderResult(ExchangeDto exchangeDto) throws SecurityException {
+        validate.isMatched(exchangeDto.getMatchResult());
+        Order takerOrder = validate.isOrder(orderRepository.findById(exchangeDto.getTakerOrderId()));
+        Order makerOrder = validate.isOrder(orderRepository.findById(exchangeDto.getMakerOrderId()));
+        switch (takerOrder.getSide()) {
+            case BUY -> {
+                buyOrderResult(takerOrder,makerOrder,exchangeDto.getAmount());
+            }
+            case SELL -> {
+                sellOrderResult(takerOrder,makerOrder,exchangeDto.getAmount());
+            }
+            default -> throw new IllegalAccessError();
+        }
+    }
+
+
+
+
+    @Override
+    public void orderCancel(int userId, int orderId) {
+
+    }
+
+    private ExchangeDto sellOrder(User user, Stock stock, OrderRequest orderRequest) throws SecurityException {
         StockWallet stockWallet = validate.isStockWallet(stockWalletRepository.findByUserAndStock(user, stock));
         validate.isBlock(stockWallet.isBlocked(), false);
         validate.possibleOrder(stockWallet.getReserve(), orderRequest.getQuantity());
@@ -80,7 +103,7 @@ public class OrderServiceImpl implements OrderService {
 
     }
 
-    private ExchangeResponse buyOrder(User user, Stock stock, OrderRequest orderRequest) throws SecurityException {
+    private ExchangeDto buyOrder(User user, Stock stock, OrderRequest orderRequest) throws SecurityException {
         CashWallet cashWallet = validate.isCashWallet(cashWalletRepository.findByUserId(user.getId()));
         validate.isBlock(cashWallet.isBlocked(), true);
         validate.possibleOrder(cashWallet.getReserve(), orderRequest.getPrice() * orderRequest.getQuantity());
@@ -95,10 +118,17 @@ public class OrderServiceImpl implements OrderService {
         return exchange(new ExchangeRequest(order.getId(), order.getStock().getId(), order.getPrice(), order.getAmount(), "BUY", order.getCreatedAt()));
     }
 
-    private ExchangeResponse exchange(ExchangeRequest exchangeRequest) {
+    private ExchangeDto exchange(ExchangeRequest exchangeRequest) {
         String url = String.format("http://%s:%s/api/v1/market/order", exchangeServerHost, exchangeServerPort);
-        ResponseEntity<ExchangeResponse> response =
-                restTemplate.postForEntity(url, exchangeRequest, ExchangeResponse.class);
+        ResponseEntity<ExchangeDto> response =
+                restTemplate.postForEntity(url, exchangeRequest, ExchangeDto.class);
         return response.getBody();
+    }
+
+    private void buyOrderResult(Order takerOrder, Order makerOrder, int amount) {
+
+
+    }
+    private void sellOrderResult(Order takerOrder, Order makerOrder, int amount) {
     }
 }

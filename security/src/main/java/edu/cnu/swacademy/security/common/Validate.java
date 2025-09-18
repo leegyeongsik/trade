@@ -3,6 +3,7 @@ package edu.cnu.swacademy.security.common;
 import edu.cnu.swacademy.security.auth.domain.Authentication;
 import edu.cnu.swacademy.security.cashwallet.domain.CashWallet;
 import edu.cnu.swacademy.security.market.domain.MarketStatus;
+import edu.cnu.swacademy.security.order.domain.Order;
 import edu.cnu.swacademy.security.stock.domain.Stock;
 import edu.cnu.swacademy.security.stockwallet.domain.StockWallet;
 import edu.cnu.swacademy.security.user.entity.User;
@@ -116,5 +117,16 @@ public class Validate {
         if(reserve<price){
             throw new SecurityException(ErrorCode.INSUFFICIENT_BALANCE);
         }
+    }
+
+    public void isMatched(String matchResult) throws SecurityException {
+        if(!matchResult.equals("Matched")){
+            throw new SecurityException(ErrorCode.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    public Order isOrder(Optional<Order> optionalOrder) throws SecurityException {
+        return optionalOrder.orElseThrow(() ->
+                new SecurityException(ErrorCode.INTERNAL_SERVER_ERROR));
     }
 }
