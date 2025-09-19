@@ -3,13 +3,21 @@ package edu.cnu.swacademy.security.market.service;
 import edu.cnu.swacademy.security.common.SecurityException;
 import edu.cnu.swacademy.security.common.Validate;
 import edu.cnu.swacademy.security.market.domain.EngineStatus;
+import edu.cnu.swacademy.security.market.domain.MarketStatus;
 import edu.cnu.swacademy.security.market.dto.MarketResponse;
+import edu.cnu.swacademy.security.market.repository.MarketStatusRepository;
+import edu.cnu.swacademy.security.stock.domain.Stock;
+import edu.cnu.swacademy.security.stock.repository.StockRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 @Service
 @RequiredArgsConstructor
@@ -31,11 +39,28 @@ public class MarketServiceImpl implements MarketService {
     private int redisPort;
     private final Validate validate;
     private final StatusService statusService;
+    private final MarketStatusRepository marketStatusRepository;
+    private final StockRepository stockRepository;
+    private static final int TEMPORARY_PREVIOUS_CLOSE_PRICE = 30000;
+    private final StringRedisTemplate redisTemplate;
 
     @Override
     public MarketResponse openMarket() throws SecurityException, IOException {
         validate.exchangeServerNotExistCheck(exchangeServerProcess != null && exchangeServerProcess.isAlive());
-
+        List<MarketStatus> latestMarketStatus = marketStatusRepository.findLatestMarketStatusPerStock();
+        if (latestMarketStatus.isEmpty()) {
+            List<Stock> stocks = stockRepository.findAll();
+            for (Stock stock : stocks) {
+                latestMarketStatus.add(new MarketStatus(stock, LocalDateTime.now(), TEMPORARY_PREVIOUS_CLOSE_PRICE,
+                        statusService.calculateUpperLimitPrice(BigDecimal.valueOf(TEMPORARY_PREVIOUS_CLOSE_PRICE)).intValue(),
+                        statusService.calculateLowerLimitPrice(BigDecimal.valueOf(TEMPORARY_PREVIOUS_CLOSE_PRICE)).intValue()));
+            }
+            marketStatusRepository.saveAll(latestMarketStatus);
+        }
+        for (MarketStatus marketStatus : latestMarketStatus) {
+            redisTemplate.opsForSet().add("allStockIds", String.valueOf(marketStatus.getStock().getId()));
+        }
+        redisTemplate.expire("allStockIds", 5, TimeUnit.MINUTES);
         startExchangeServer();
         return new MarketResponse(EngineStatus.RUNNING, LocalDateTime.now());
     }

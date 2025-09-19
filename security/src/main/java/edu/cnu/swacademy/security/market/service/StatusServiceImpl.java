@@ -49,11 +49,11 @@ public class StatusServiceImpl implements StatusService{
         return new MarketStatus(stock,nextStartOfDay, referencePrice.intValue(),upperLimitPrice,lowerLimitPrice);
     }
 
-    private BigDecimal calculateUpperLimitPrice(BigDecimal referencePrice) {
+    public BigDecimal calculateUpperLimitPrice(BigDecimal referencePrice) {
         return TickSizeUtil.validateAndAdjustTickSize(referencePrice.multiply(UPPER));
     }
 
-    private BigDecimal calculateLowerLimitPrice(BigDecimal referencePrice) {
+    public BigDecimal calculateLowerLimitPrice(BigDecimal referencePrice) {
         return TickSizeUtil.validateAndAdjustTickSize(referencePrice.multiply(LOWER));
     }
 }
