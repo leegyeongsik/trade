@@ -58,4 +58,10 @@ public class CashWallet extends BaseEntity {
         this.reserve-=price;
         this.deposit+=price;
     }
+    public void orderDeposit(int price){
+        this.reserve+=price;
+    }
+    public void orderWithdraw(int price) {
+        this.deposit-=price;
+    }
 }

@@ -68,4 +68,33 @@ public class MarketStatus extends BaseEntity {
         this.tradingVolume = 0;
         this.tradingAmount = 0;
     }
+
+
+
+    public void addOpeningPrice(int price){
+        if(this.openingPrice == 0){
+            this.openingPrice = price;
+        }
+    }
+    public void addClosingPrice(int price){
+        this.closingPrice = price;
+    }
+    public void addHighestPrice(int price){
+        this.highestPrice  = Math.max(price,this.highestPrice);
+    }
+    public void addLowestPrice(int price){
+        if(lowerLimitPrice == 0){
+            this.lowerLimitPrice = price;
+            return;
+        }
+        this.lowerLimitPrice  = Math.min(price,this.lowerLimitPrice);
+    }
+    public void addTradingVolume(int amount){
+        this.tradingVolume+=amount;
+    }
+    public void addTradingAmount(int price){
+        this.tradingAmount+=price;
+    }
+
+
 }

@@ -48,4 +48,16 @@ public class Order extends BaseEntity {
         this.unfilledAmount = unfilledAmount;
         this.canceledAmount =0;
     }
+
+
+
+
+    public void cancel(){
+        this.canceledAmount+=unfilledAmount;
+        this.unfilledAmount = 0;
+    }
+
+    public void minusAmount(int amount){
+        this.unfilledAmount-=amount;
+    }
 }
