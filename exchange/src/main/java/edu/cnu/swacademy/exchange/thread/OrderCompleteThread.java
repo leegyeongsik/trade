@@ -15,6 +15,8 @@ public class OrderCompleteThread implements Runnable{
 
     @Override
     public void run() {
-         exchangeService.orderComplete(orderComplete.poll());
+        while (!Thread.currentThread().isInterrupted()) {
+            exchangeService.orderComplete(orderComplete.poll());
+        }
     }
 }
