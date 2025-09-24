@@ -8,6 +8,9 @@ import edu.cnu.swacademy.exchange.process.WorkerQueue;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.client.RestTemplate;
@@ -37,12 +40,12 @@ public class ExchangeServiceImpl implements ExchangeService {
 
     @Override
     public ExchangeResponse orderProcess(@Valid @RequestBody OrderRequest orderRequest) {
-        workerQueue.orderOffer(new Order(orderRequest.getOrder_id(),
-                orderRequest.getProduct_id(),
+        workerQueue.orderOffer(new Order(orderRequest.getOrderId(),
+                orderRequest.getProductId(),
                 orderRequest.getPrice(),
                 orderRequest.getAmount(),
                 orderRequest.getSide(),
-                orderRequest.getCreated_at()));
+                orderRequest.getCreatedAt()));
         return exchangeIng();
     }
 
@@ -56,8 +59,12 @@ public class ExchangeServiceImpl implements ExchangeService {
     }
 
     public void orderComplete(ExchangeResponse exchangeResponse) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
         String url = String.format("http://%s:%s/api/v1/order/result", securityServerHost, securityServerPort);
-        restTemplate.postForEntity(url, exchangeResponse, ExchangeResponse.class);
+        HttpEntity<ExchangeResponse> requestEntity = new HttpEntity<>(exchangeResponse, headers);
+
+        restTemplate.postForEntity(url, requestEntity, ExchangeResponse.class);
     }
 
     public RedisOrderDto getOrder(int targetOrderId){

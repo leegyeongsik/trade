@@ -5,13 +5,14 @@ import edu.cnu.swacademy.security.market.dto.MarketResponse;
 import edu.cnu.swacademy.security.market.service.MarketService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
 
 @RequiredArgsConstructor
-@RestController("/api/v1/market")
-
+@RestController()
+@RequestMapping("/api/v1/market")
 public class MarketController {
     private final MarketService marketService;
 

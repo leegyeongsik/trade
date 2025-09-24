@@ -6,12 +6,11 @@ import edu.cnu.swacademy.exchange.dto.OrderRequest;
 import edu.cnu.swacademy.exchange.service.ExchangeService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
 @RequiredArgsConstructor
-@RestController("/api/v1/market/order")
+@RestController()
+@RequestMapping("/api/v1/market/order")
 public class ExchangeController {
     private final ExchangeService exchangeService;
     @PostMapping

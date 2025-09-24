@@ -241,8 +241,15 @@ public class OrderServiceImpl implements OrderService {
 
     private ExchangeDto exchange(ExchangeRequest exchangeRequest) {
         String url = String.format("http://%s:%s/api/v1/market/order", exchangeServerHost, exchangeServerPort);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setAccept(List.of(MediaType.APPLICATION_JSON));
+        HttpEntity<ExchangeRequest> requestEntity = new HttpEntity<>(exchangeRequest, headers);
         ResponseEntity<ExchangeDto> response =
-                restTemplate.postForEntity(url, exchangeRequest, ExchangeDto.class);
+                restTemplate.postForEntity(url, requestEntity, ExchangeDto.class);
+
         return response.getBody();
     }
 
@@ -286,54 +293,73 @@ public class OrderServiceImpl implements OrderService {
         Match match = new Match(buyOrder.getStock(),sellOrder,buyOrder);
 
         Worker worker = new CommitWorker(new SaveCommitter(applicationContext.getBean(RepositoryMapper.class))
-                ,new BaseEntity[]{buyCashWallet,sellCashWallet,buyCashWalletHistory,sellCashWalletHistory,buyStockWalletHistory,sellStockWalletHistory,buyOrder,sellOrder,stockStatus,match});
+                ,new BaseEntity[]{buyCashWallet,
+                sellCashWallet,
+                buyCashWalletHistory,
+                sellCashWalletHistory,
+                buyStockWalletHistory,
+                sellStockWalletHistory,
+                buyOrder,sellOrder,
+                stockStatus,
+                match});
         worker.execute();
 
     }
+    private List<PriceResponse> getOrderBook(int stockId, String side) {
+        String keyPattern = stockId + ":" + side + ":*";
+        Set<String> keys = redisTemplate.keys(keyPattern);
 
-    private List<PriceResponse> getOrderBook(int stockId,String Side) {
-        Set<String> buyKeys = redisTemplate.keys(stockId + ":"+Side+":*");
+        if (keys == null || keys.isEmpty()) {
+            return new ArrayList<>();
+        }
+
         List<PriceResponse> responses = new ArrayList<>();
 
-        for (String key : buyKeys) {
-            String json = redisTemplate.opsForValue().get(key);
-            if (json == null) continue;
+        for (String key : keys) {
+            List<String> jsonList = redisTemplate.opsForList().range(key, 0, -1);
+            if (jsonList == null || jsonList.isEmpty()) continue;
 
-            PriceResponse priceResponse;
-            try {
-                priceResponse = mapper.readValue(json, PriceResponse.class);
-            } catch (JsonProcessingException e) {
-                throw new RuntimeException(e);
+            List<OrderInfoResponse> orders = new ArrayList<>();
+            for (String json : jsonList) {
+                try {
+                    orders.add(mapper.readValue(json, OrderInfoResponse.class));
+                } catch (JsonProcessingException e) {
+                    continue;
+                }
             }
 
+            // PriceResponse 생성
+            PriceResponse priceResponse = new PriceResponse();
             String[] parts = key.split(":");
             if (parts.length >= 3) {
                 priceResponse.setPrice(parts[2]);
+            } else {
+                priceResponse.setPrice("0");
             }
 
-            if (priceResponse.getOrders() == null) {
-                priceResponse.setOrders(new ArrayList<>());
-            }
+            priceResponse.setOrders(orders);
 
-            int totalQuantity = priceResponse.getOrders().stream()
-                    .mapToInt(OrderInfoResponse::getUnfilled_quantity)
+            int totalQuantity = orders.stream()
+                    .mapToInt(OrderInfoResponse::getUnfilledQuantity)
                     .sum();
             priceResponse.setTotal_quantity(new TotalQuantityResponse(totalQuantity));
 
             responses.add(priceResponse);
         }
-        return responses;
 
+        return responses;
     }
+
+    // OrderBook 객체 생성
     private OrderBookSell orderBookSell(List<PriceResponse> responses) {
         OrderBookSell sell = new OrderBookSell();
-        sell.setPrice(responses);
+        sell.setPrice(responses != null ? responses : new ArrayList<>());
         return sell;
     }
 
     private OrderBookBuy orderBookBuy(List<PriceResponse> responses) {
         OrderBookBuy buy = new OrderBookBuy();
-        buy.setPrice(responses);
+        buy.setPrice(responses != null ? responses : new ArrayList<>());
         return buy;
     }
     private void orderReject() {

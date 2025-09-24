@@ -11,6 +11,9 @@ import edu.cnu.swacademy.security.user.entity.User;
 import edu.cnu.swacademy.security.user.repository.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Optional;
+
 @Service
 public class AuthService {
     private final UserRepository userRepository;
@@ -32,7 +35,7 @@ public class AuthService {
         validate.passwordValidation(encodingPassword,user.getPassword());
 
         TokenInfo tokenInfo= jwtUtil.generateAccessAndRefreshToken(user.getId());
-        Authentication authentication=validate.checkAuthentication(authenticationRepository.findByUser_Id(user.getId())); // 있으면 그거 그냥 가져와서 업데이트만 쳐
+        Authentication authentication=validate.checkAuthentication(authenticationRepository.findByUser(user)); // 있으면 그거 그냥 가져와서 업데이트만 쳐
         authentication =  authentication == null
                 ? new Authentication(user,tokenInfo.refreshToken(),tokenInfo.refreshTokenExpiredAt()) :
                 authentication.updateRefreshToken(tokenInfo.refreshToken(),tokenInfo.refreshTokenExpiredAt());

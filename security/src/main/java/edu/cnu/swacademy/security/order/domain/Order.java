@@ -15,7 +15,7 @@ import org.hibernate.annotations.SQLRestriction;
 @SQLRestriction("deleted_at IS NULL")
 @SQLDelete(sql = "UPDATE order SET deleted_at = CURRENT_TIMESTAMP WHERE id = ?")
 @NoArgsConstructor(access = lombok.AccessLevel.PROTECTED)
-@Table(name = "order")
+@Table(name = "`order`")
 @Entity
 public class Order extends BaseEntity {
     @Id
@@ -29,6 +29,7 @@ public class Order extends BaseEntity {
     @JoinColumn(nullable = false)
     private Stock stock;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private SideStatus side;
     @Column(nullable = false, columnDefinition  = "INT UNSIGNED")

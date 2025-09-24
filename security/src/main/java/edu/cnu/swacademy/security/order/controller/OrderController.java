@@ -11,11 +11,12 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 
-@RestController("/api/v1/")
+@RestController()
 @RequiredArgsConstructor
+@RequestMapping("/api/v1/")
 public class OrderController {
     private final OrderService orderService;
-    @PostMapping()
+    @PostMapping("order")
     void order(HttpServletRequest request , @Valid @RequestBody OrderRequest orderRequest) throws SecurityException, IOException {
         int userId = (int) request.getAttribute("user_id");
         orderService.order(userId, orderRequest);

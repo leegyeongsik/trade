@@ -13,9 +13,9 @@ import lombok.Setter;
 @RequiredArgsConstructor
 public class OrderRequest {
     @Min(1)
-    int product_id;
+    int productId;
     @Min(1)
-    int order_id;
+    int orderId;
     @Min(1)
     int price;
     @Min(1)
@@ -23,5 +23,5 @@ public class OrderRequest {
     @NotBlank
     @Pattern(regexp = "BUY|SELL")
     String side;
-    String created_at;
+    String createdAt;
 }

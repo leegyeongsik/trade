@@ -55,7 +55,7 @@ public class Validate {
     }
 
     public Authentication checkAuthentication(Optional<Authentication> authentication) {
-        return authentication.get();
+        return authentication.orElse(null);
     }
 
     public void existsByEmail(boolean b) throws SecurityException {

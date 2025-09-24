@@ -1,9 +1,6 @@
 package edu.cnu.swacademy.security.common;
 
-import jakarta.servlet.Filter;
-import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletRequest;
-import jakarta.servlet.ServletResponse;
+import jakarta.servlet.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -23,7 +20,15 @@ public class JwtAuthenticationFilter implements Filter {
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException {
         HttpServletRequest httpRequest = (HttpServletRequest) request;
         HttpServletResponse httpResponse = (HttpServletResponse) response;
-
+        String path = ((HttpServletRequest) request).getRequestURI();
+        if ("/api/v1/order/result".equals(path)) {
+            try {
+                chain.doFilter(request, response);
+            } catch (ServletException e) {
+                throw new RuntimeException(e);
+            }
+            return;
+        }
         try {
             String authHeader = httpRequest.getHeader("Authorization");
             if (authHeader == null || !authHeader.startsWith("Bearer ")) {

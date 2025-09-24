@@ -1,7 +1,7 @@
 package edu.cnu.swacademy.security.common.dml;
 
-import edu.cnu.swacademy.exchange.domain.Order;
 import edu.cnu.swacademy.security.cashwallet.domain.CashWallet;
+import edu.cnu.swacademy.security.order.domain.Order;
 import edu.cnu.swacademy.security.cashwallet.domain.CashWalletHistory;
 import edu.cnu.swacademy.security.cashwallet.repository.CashWalletHistoryRepository;
 import edu.cnu.swacademy.security.cashwallet.repository.CashWalletRepository;

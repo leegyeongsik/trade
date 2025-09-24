@@ -14,7 +14,7 @@ import org.hibernate.annotations.SQLRestriction;
 @SQLRestriction("deleted_at IS NULL")
 @SQLDelete(sql = "UPDATE match SET deleted_at = CURRENT_TIMESTAMP WHERE id = ?")
 @NoArgsConstructor(access = lombok.AccessLevel.PROTECTED)
-@Table(name = "match")
+@Table(name =  "`match`")
 @Entity
 public class Match extends BaseEntity {
     @Id

@@ -1,6 +1,7 @@
 package edu.cnu.swacademy.security.auth.repository;
 
 import edu.cnu.swacademy.security.auth.domain.Authentication;
+import edu.cnu.swacademy.security.user.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
@@ -12,4 +13,6 @@ public interface AuthenticationRepository extends JpaRepository<Authentication, 
     Optional<Authentication> findByUserIdAndRefreshToken(int userId, String refreshToken);
 
     Optional<Authentication> findByUser_Id(Integer userId);
+
+    Optional<Authentication> findByUser(User user);
 }
