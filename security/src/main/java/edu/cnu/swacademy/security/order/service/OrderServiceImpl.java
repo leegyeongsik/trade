@@ -328,7 +328,6 @@ public class OrderServiceImpl implements OrderService {
                 }
             }
 
-            // PriceResponse 생성
             PriceResponse priceResponse = new PriceResponse();
             String[] parts = key.split(":");
             if (parts.length >= 3) {
@@ -350,7 +349,6 @@ public class OrderServiceImpl implements OrderService {
         return responses;
     }
 
-    // OrderBook 객체 생성
     private OrderBookSell orderBookSell(List<PriceResponse> responses) {
         OrderBookSell sell = new OrderBookSell();
         sell.setPrice(responses != null ? responses : new ArrayList<>());
