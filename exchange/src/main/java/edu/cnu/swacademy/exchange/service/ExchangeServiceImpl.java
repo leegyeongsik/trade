@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -64,7 +65,7 @@ public class ExchangeServiceImpl implements ExchangeService {
         String url = String.format("http://%s:%s/api/v1/order/result", securityServerHost, securityServerPort);
         HttpEntity<ExchangeResponse> requestEntity = new HttpEntity<>(exchangeResponse, headers);
 
-        restTemplate.postForEntity(url, requestEntity, ExchangeResponse.class);
+        restTemplate.exchange(url, HttpMethod.POST, requestEntity, Void.class);
     }
 
     public RedisOrderDto getOrder(int targetOrderId){
