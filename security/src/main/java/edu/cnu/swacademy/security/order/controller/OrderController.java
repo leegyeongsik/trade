@@ -33,7 +33,7 @@ public class OrderController {
         orderService.orderCancel(userId,orderId);
     }
 
-    @GetMapping("order/unfilled")
+    @GetMapping("orders/unfilled")
     public OrderUnfilledsResponse getUnfilledOrders(
             HttpServletRequest request,
             @RequestParam(required = false) int stock_id,
